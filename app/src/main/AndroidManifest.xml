@@ -24,6 +24,28 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".Welcome"
+            android:label="@string/title_activity_welcome"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".Choice"
+            android:label="@string/title_activity_choice"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Totalcount"
+            android:label="@string/title_activity_totalcount"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".RushHour"
+            android:label="@string/title_activity_rush_hour"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
