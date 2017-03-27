@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/FactOrCrap.iml" filepath="$PROJECT_DIR$/FactOrCrap.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/hti-group-17-fact-or-crap.iml" filepath="$PROJECT_DIR$/hti-group-17-fact-or-crap.iml" />
     </modules>
   </component>
 </project>
