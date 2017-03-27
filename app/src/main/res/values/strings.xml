@@ -27,4 +27,5 @@
     <string name="title_totalcount_detail">Totalcount Detail</string>
     <string name="title_activity_choice">Choice</string>
     <string name="title_activity_rush_hour">RushHour</string>
+    <string name="title_activity_input_session_page">InputSessionPage</string>
 </resources>
