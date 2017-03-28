@@ -28,4 +28,7 @@
     <string name="title_activity_choice">Choice</string>
     <string name="title_activity_rush_hour">RushHour</string>
     <string name="title_activity_input_session_page">InputSessionPage</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
