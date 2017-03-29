@@ -1,5 +1,6 @@
 package ucf.cap4104.group17.factorcrap;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,6 +13,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -63,6 +65,8 @@ public class Welcome extends AppCompatActivity {
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             // Use the Builder class for convenient dialog construction
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            final LayoutInflater inflater = getActivity().getLayoutInflater();
+
             String type = "new";
             Bundle args = getArguments();
             if (args != null) {
@@ -73,15 +77,15 @@ public class Welcome extends AppCompatActivity {
 
             finalType = type;
 
-            builder.setView(R.layout.dialog_layout)
+            // null because it's a dialog
+            final View layout = inflater.inflate(R.layout.dialog_layout, null);
+
+            builder.setView(layout)
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            View view = getView();
-                            if (view != null) {
-                                SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
-                                EditText input = (EditText) view.findViewById(R.id.editText4);
-                                pref.edit().putString("NAME", input.getText().toString()).apply();
-                            }
+                            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
+                            EditText input = (EditText) layout.findViewById(R.id.editText4);
+                            pref.edit().putString("NAME", input.getText().toString()).apply();
                             if (finalType.equals("new")) {
                                 getActivity().startActivity(new Intent(getContext(), Choice.class));
                             } else {

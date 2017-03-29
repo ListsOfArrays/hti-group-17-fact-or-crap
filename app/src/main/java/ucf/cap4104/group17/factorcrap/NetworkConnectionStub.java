@@ -7,8 +7,8 @@ package ucf.cap4104.group17.factorcrap;
 
 public class NetworkConnectionStub {
 
-    public void sendGuess(boolean guessedTrue, NetworkCallback networkCallback) {
-        RoundManager.INSTANCE.makeGuess(guessedTrue, networkCallback);
+    public void sendGuess(boolean guessedTrue, NetworkCallback networkCallback, int turnNum) {
+        RoundManager.INSTANCE.makeGuess(guessedTrue, networkCallback, turnNum);
     }
 
     public interface NetworkCallback {

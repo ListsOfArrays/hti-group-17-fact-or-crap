@@ -12,10 +12,12 @@ public enum RoundManager {
     INSTANCE();
 
     private Card currentCard;
-    private boolean first;
+    private boolean firstCorrect;
     private Card roundCards[];
     private int roundNum;
     private int tokensLeft;
+    private int currentPlayersCount;
+    private int allPlayersCount;
     private int numPlayerPlayed;
     private Player realPlayer;
     private AI fakePlayerList[];
@@ -23,6 +25,7 @@ public enum RoundManager {
     private TurnListener listener;
 
     private final int RUSH_HOUR_TIME = 60_000; // 60 seconds
+    private int turnNum = 0;
 
     public void startGame(TurnListener turnListener, Player realPlayer) {
         ArrayList<Card> list = Card.getCards();
@@ -41,25 +44,33 @@ public enum RoundManager {
             fakePlayerList[i] = new AI(new Player(nameList[i]));
         }
 
-        nextRound();
+        allPlayersCount = fakePlayerList.length + 1;
+
+        fakePlayerList[0].getPlayer().setWon(true);
+        fakePlayerList[0].getPlayer().onNetworkCallback(20);
+        someoneWon();
     }
 
     private void nextRound() {
+        turnNum += 1;
+        numPlayerPlayed = 0;
+        firstCorrect = false;
         if (roundNum < roundCards.length && tokensLeft > 0) {
             if (rng.nextInt(10) != 0) {
                 currentCard = roundCards[roundNum++];
-                first = true;
-                numPlayerPlayed = 0;
+                firstCorrect = true;
+                currentPlayersCount = allPlayersCount;
                 for (AI ai : fakePlayerList) {
-                    ai.newTurn();
+                    ai.newTurn(turnNum);
                 }
-                listener.newTurn(false, 0);
+                listener.newTurn(turnNum, false, 0);
             }
             // randomly deal a rush hour card
             else {
+                currentPlayersCount = 1;
                 if (rng.nextBoolean()) {
                     rushHour(realPlayer);
-                    listener.newTurn(true, 5);
+                    listener.newTurn(turnNum, true, 5);
                 } else {
                     rushHour(fakePlayerList[rng.nextInt(fakePlayerList.length)]);
                     listener.waitTurn();
@@ -73,6 +84,8 @@ public enum RoundManager {
     private Thread timeThread;
 
     private void rushHour(Player realPlayer) {
+        turnNum += 1;
+        final int endRound = turnNum + 5;
         timeThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -81,6 +94,7 @@ public enum RoundManager {
                 } catch (InterruptedException e) {
                 } finally {
                     timeThread = null;
+                    turnNum = endRound;
                     nextRound();
                 }
             }
@@ -89,6 +103,7 @@ public enum RoundManager {
     }
 
     private void rushHour(AI fakePlayer) {
+        turnNum += 1;
         timeThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -102,10 +117,11 @@ public enum RoundManager {
             }
         });
         timeThread.start();
-
     }
 
     private void tryToEndGame() {
+        turnNum += 1;
+        roundNum = 0;
         int mostPoints = realPlayer.getPoints();
         ArrayList<AI> bestAI = new ArrayList<>();
 
@@ -144,6 +160,7 @@ public enum RoundManager {
     }
 
     private void someoneWon() {
+        listener.endedGame();
     }
 
     public Card getCurrentCard() {
@@ -151,16 +168,42 @@ public enum RoundManager {
     }
 
     private final Object threadLock = new Object();
-    public void makeGuess(boolean guessedTrue, NetworkConnectionStub.NetworkCallback networkCallback) {
+    public void makeGuess(boolean guessedTrue, NetworkConnectionStub.NetworkCallback networkCallback, int turnNum) {
         synchronized (threadLock) {
-            if (guessedTrue == currentCard.getTruthValue()) {
-                networkCallback.onNetworkCallback(2);
+            if (turnNum == this.turnNum) {
+                if (guessedTrue == currentCard.getTruthValue()) {
+                    // first & correct!
+                    if (firstCorrect && tokensLeft > 1) {
+                        tokensLeft -= 2;
+                        networkCallback.onNetworkCallback(2);
+                    // either not first or not enough tokens to satisfy, but still correct
+                    } else if (tokensLeft > 0) {
+                        tokensLeft -= 1;
+                        networkCallback.onNetworkCallback(1);
+                    // still correct, not enough tokens
+                    } else {
+                        networkCallback.onNetworkCallback(0);
+                    }
+                    firstCorrect = false;
+                // not correct
+                } else {
+                    networkCallback.onNetworkCallback(0);
+                }
+            // not even the same turn
+            } else {
+                networkCallback.onNetworkCallback(0);
+            }
+
+            // game over!
+            if (tokensLeft == 0) {
+                firstCorrect = false;
+                tryToEndGame();
             }
         }
     }
 
     public interface TurnListener {
-        void newTurn(boolean isRushHour, int cardNum);
+        void newTurn(int turnNum, boolean isRushHour, int cardNum);
         void endedGame();
         void waitTurn();
     }

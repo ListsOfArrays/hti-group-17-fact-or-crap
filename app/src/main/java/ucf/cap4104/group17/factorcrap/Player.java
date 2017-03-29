@@ -33,12 +33,12 @@ public class Player implements NetworkConnectionStub.NetworkCallback {
         won = didWin;
     }
 
-    public boolean didWin() {
+    public boolean won() {
         return won;
     }
 
-    public void guess(boolean guessedTrue) {
-        connection.sendGuess(guessedTrue, this);
+    public void guess(boolean guessedTrue, int turnNum) {
+        connection.sendGuess(guessedTrue, this, turnNum);
     }
 
     @Override

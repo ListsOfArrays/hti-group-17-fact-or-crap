@@ -10,6 +10,7 @@ public class AI {
     private final Object lock;
     private final SecureRandom rng;
     private final Player toControl;
+    private int realTurnNum;
 
     public AI(Player toControl) {
         lock = new Object();
@@ -28,7 +29,8 @@ public class AI {
         return (int) (millisecondsToWait * 1000);
     }
 
-    public void newTurn() {
+    public void newTurn(final int turnNum) {
+        realTurnNum = turnNum;
         final boolean guess = rng.nextBoolean();
         final int millisecondsToWait = secondsToWaitInMilliseconds(5, 4);
         new Thread(new Runnable() {
@@ -39,13 +41,16 @@ public class AI {
                 } catch (InterruptedException e) {
                 }
                 finally {
-                    toControl.guess(guess);
+                    if (turnNum == realTurnNum) {
+                        toControl.guess(guess, turnNum);
+                    }
                 }
             }
         }).start();
     }
 
-    public void quickGuess() {
+    public void quickGuess(final int turnNum) {
+        realTurnNum = turnNum;
         final int millisecondsToWait = secondsToWaitInMilliseconds(3, 2);
         final boolean guess = rng.nextBoolean();
         new Thread(new Runnable() {
@@ -56,7 +61,9 @@ public class AI {
                 } catch (InterruptedException e) {
                 }
                 finally {
-                    toControl.guess(guess);
+                    if (turnNum == realTurnNum) {
+                        toControl.guess(guess, turnNum);
+                    }
                 }
             }
         }).start();

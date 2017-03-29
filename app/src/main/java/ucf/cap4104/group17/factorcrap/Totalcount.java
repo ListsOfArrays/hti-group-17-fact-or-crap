@@ -14,7 +14,9 @@ import com.google.gson.Gson;
 
 public class Totalcount extends AppCompatActivity implements RoundManager.TurnListener {
     private static String PLAYER = "PLAYER";
+    private static String TURN_NUM = "TURN_NUM";
     private Player player;
+    private int turnNum;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,14 +45,14 @@ public class Totalcount extends AppCompatActivity implements RoundManager.TurnLi
             @Override
             public void onClick(View v) {
                 startWaiting();
-                player.guess(true);
+                player.guess(true, turnNum);
             }
         });
         crap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startWaiting();
-                player.guess(false);
+                player.guess(false, turnNum);
             }
         });
     }
@@ -82,7 +84,8 @@ public class Totalcount extends AppCompatActivity implements RoundManager.TurnLi
     }
 
     @Override
-    public void newTurn(boolean isRushHour, int cardNum) {
+    public void newTurn(int turnNum, boolean isRushHour, int cardNum) {
+        this.turnNum = turnNum;
         final TextView cardContents = (TextView) findViewById(R.id.theCardContents);
         cardContents.setText(RoundManager.INSTANCE.getCurrentCard().getDescription());
         String points = "Token Count: " + player.getPoints();
