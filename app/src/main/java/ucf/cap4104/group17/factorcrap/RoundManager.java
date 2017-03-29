@@ -1,5 +1,7 @@
 package ucf.cap4104.group17.factorcrap;
 
+import android.support.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
@@ -18,62 +20,47 @@ public enum RoundManager {
     private int tokensLeft;
     private int currentPlayersCount;
     private int allPlayersCount;
-    private int numPlayerPlayed;
-    private Player realPlayer;
-    private AI fakePlayerList[];
+    private Player[] playerList;
     private Random rng;
-    private TurnListener listener;
-
     private final int RUSH_HOUR_TIME = 60_000; // 60 seconds
     private int turnNum = 0;
 
-    public void startGame(TurnListener turnListener, Player realPlayer) {
+    public void startGame(RealPlayer realPlayer) {
         ArrayList<Card> list = Card.getCards();
         Collections.shuffle(list);
         roundCards = list.toArray(new Card[list.size()]);
-        listener = turnListener;
-        this.realPlayer = realPlayer;
 
         roundNum = 0;
         this.tokensLeft = list.size();
 
         rng = new Random();
         String[] nameList = new String[] {"Robert", "Wendy (AI)", "Dave", "Mary", "John", "Valerie (AI)", "armsDealer"};
-        fakePlayerList = new AI[1 + rng.nextInt(7)];
-        for (int i = 0; i < fakePlayerList.length; i++) {
-            fakePlayerList[i] = new AI(new Player(nameList[i]));
+        playerList = new Player[2 + rng.nextInt(7)];
+        for (int i = 1; i < playerList.length; i++) {
+            playerList[i] = new AI(nameList[i - 1]);
         }
+        playerList[0] = realPlayer;
 
-        allPlayersCount = fakePlayerList.length + 1;
-
-        fakePlayerList[0].getPlayer().setWon(true);
-        fakePlayerList[0].getPlayer().onNetworkCallback(20);
-        someoneWon();
+        allPlayersCount = playerList.length;
+        nextRound();
     }
 
     private void nextRound() {
         turnNum += 1;
-        numPlayerPlayed = 0;
         firstCorrect = false;
         if (roundNum < roundCards.length && tokensLeft > 0) {
             if (rng.nextInt(10) != 0) {
                 currentCard = roundCards[roundNum++];
                 firstCorrect = true;
                 currentPlayersCount = allPlayersCount;
-                for (AI ai : fakePlayerList) {
-                    ai.newTurn(turnNum);
-                }
-                listener.newTurn(turnNum, false, 0);
             }
             // randomly deal a rush hour card
             else {
                 currentPlayersCount = 1;
                 if (rng.nextBoolean()) {
-                    rushHour(realPlayer);
-                    listener.newTurn(turnNum, true, 5);
+                    rushHour(playerList[0]);
                 } else {
-                    rushHour(fakePlayerList[rng.nextInt(fakePlayerList.length)]);
-                    listener.waitTurn();
+                    rushHour(playerList[rng.nextInt(playerList.length - 1) + 1]);
                 }
             }
         } else {
@@ -81,86 +68,74 @@ public enum RoundManager {
         }
     }
 
-    private Thread timeThread;
-
     private void rushHour(Player realPlayer) {
-        turnNum += 1;
         final int endRound = turnNum + 5;
-        timeThread = new Thread(new Runnable() {
+        // start timer
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     Thread.sleep(RUSH_HOUR_TIME);
                 } catch (InterruptedException e) {
                 } finally {
-                    timeThread = null;
-                    turnNum = endRound;
-                    nextRound();
+                    if (turnNum < endRound) {
+                        turnNum = endRound;
+                        nextRound();
+                    }
                 }
             }
-        });
-        timeThread.start();
+        }).start();
     }
 
-    private void rushHour(AI fakePlayer) {
+    private void rushHourRound() {
         turnNum += 1;
-        timeThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(RUSH_HOUR_TIME);
-                } catch (InterruptedException e) {
-                } finally {
-                    timeThread = null;
-                    nextRound();
-                }
-            }
-        });
-        timeThread.start();
+        if (roundNum < roundCards.length && tokensLeft > 0) {
+
+        }
     }
 
     private void tryToEndGame() {
         turnNum += 1;
         roundNum = 0;
-        int mostPoints = realPlayer.getPoints();
-        ArrayList<AI> bestAI = new ArrayList<>();
+        int mostPoints = playerList[0].getPoints();
 
-        for (AI ai : fakePlayerList) {
-            Player fake = ai.getPlayer();
-            if (fake.getPoints() == mostPoints) {
-                bestAI.add(ai);
-            } else if (fake.getPoints() > mostPoints) {
-                bestAI.clear();
-                mostPoints = fake.getPoints();
-                bestAI.add(ai);
+        // note: we don't add the first player until the for loop below
+        ArrayList<Player> bestPlayers = new ArrayList<>();
+        for (Player player : playerList) {
+            // tie
+            if (player.getPoints() == mostPoints) {
+                bestPlayers.add(player);
+            // new winner
+            } else if (player.getPoints() > mostPoints) {
+                bestPlayers.clear();
+                mostPoints = player.getPoints();
+                bestPlayers.add(player);
             }
+            // loser!
         }
 
-        if (mostPoints == realPlayer.getPoints() && bestAI.size() == 0) {
-            realPlayer.setWon(true);
+        // only one player won!
+        if (bestPlayers.size() == 1) {
+            bestPlayers.get(0).setWon(true);
             someoneWon();
         }
         // tie, sudden death!
-        else if (mostPoints == realPlayer.getPoints() && bestAI.size() > 0) {
-            suddenDeath(realPlayer, bestAI);
+        else if (bestPlayers.size() > 1) {
+            suddenDeath(bestPlayers);
         }
-        // one AI won.
-        else if (bestAI.size() == 1) {
-            bestAI.get(0).getPlayer().setWon(true);
-            someoneWon();
-        }
-        // multiple AI tied, sudden death!
-        else {
-            suddenDeath(null, bestAI);
+        // the universe has ended!
+        else if (bestPlayers.size() == 0) {
+            throw new AssertionError("This should not have been 0, ever!");
         }
     }
 
-    private void suddenDeath(Player realPlayer, ArrayList<AI> bestAI) {
+    private void suddenDeath(ArrayList<Player> bestPlayers) {
 
     }
 
     private void someoneWon() {
-        listener.endedGame();
+        for (Player player : playerList)
+            player.endedGame();
     }
 
     public Card getCurrentCard() {
@@ -170,6 +145,7 @@ public enum RoundManager {
     private final Object threadLock = new Object();
     public void makeGuess(boolean guessedTrue, NetworkConnectionStub.NetworkCallback networkCallback, int turnNum) {
         synchronized (threadLock) {
+            currentPlayersCount -= 1;
             if (turnNum == this.turnNum) {
                 if (guessedTrue == currentCard.getTruthValue()) {
                     // first & correct!
@@ -198,22 +174,14 @@ public enum RoundManager {
             if (tokensLeft == 0) {
                 firstCorrect = false;
                 tryToEndGame();
+            } else if (currentPlayersCount == 0) {
+                firstCorrect = false;
+                nextRound();
             }
         }
     }
 
-    public interface TurnListener {
-        void newTurn(int turnNum, boolean isRushHour, int cardNum);
-        void endedGame();
-        void waitTurn();
-    }
-
     public Player[] getResults() {
-        Player[] list = new Player[fakePlayerList.length + 1];
-        for(int i = 0; i < fakePlayerList.length; i++) {
-            list[i] = fakePlayerList[i].getPlayer();
-        }
-        list[fakePlayerList.length] = realPlayer;
-        return list;
+        return playerList;
     }
 }

@@ -12,10 +12,10 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 
-public class Totalcount extends AppCompatActivity implements RoundManager.TurnListener {
+public class Totalcount extends AppCompatActivity implements RealPlayer.Listener {
     private static String PLAYER = "PLAYER";
     private static String TURN_NUM = "TURN_NUM";
-    private Player player;
+    private RealPlayer player;
     private int turnNum;
 
     @Override
@@ -26,17 +26,17 @@ public class Totalcount extends AppCompatActivity implements RoundManager.TurnLi
 
         if (savedInstanceState != null) {
             Gson gson = new Gson();
-            player = gson.fromJson(savedInstanceState.getString(PLAYER), Player.class);
+            player = gson.fromJson(savedInstanceState.getString(PLAYER), RealPlayer.class);
         }
         // first time
         else {
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
             String name = preferences.getString("NAME", "Player");
-            player = new Player(name);
+            player = new RealPlayer(name, this);
             waiting.setVisibility(View.INVISIBLE);
             TextView rushHourText = (TextView) findViewById(R.id.rushHourTextView);
             rushHourText.setVisibility(View.INVISIBLE);
-            RoundManager.INSTANCE.startGame(this, player);
+            RoundManager.INSTANCE.startGame(player);
         }
 
         final Button fact = (Button) findViewById(R.id.button);
@@ -83,8 +83,7 @@ public class Totalcount extends AppCompatActivity implements RoundManager.TurnLi
         outState.putString(PLAYER, gson.toJson(player));
     }
 
-    @Override
-    public void newTurn(int turnNum, boolean isRushHour, int cardNum) {
+    private void newTurn(int turnNum) {
         this.turnNum = turnNum;
         final TextView cardContents = (TextView) findViewById(R.id.theCardContents);
         cardContents.setText(RoundManager.INSTANCE.getCurrentCard().getDescription());
@@ -92,22 +91,28 @@ public class Totalcount extends AppCompatActivity implements RoundManager.TurnLi
 
         final TextView pointsText = (TextView) findViewById(R.id.pointsText);
         pointsText.setText(points);
-
         stopWaiting();
-
-        TextView rushHourText = (TextView) findViewById(R.id.rushHourTextView);
-        if (isRushHour) {
-            String rushHour = "Rush Hour: Card " + cardNum + " / 5";
-            rushHourText.setText(rushHour);
-            rushHourText.setVisibility(View.VISIBLE);
-        } else {
-            rushHourText.setVisibility(View.GONE);
-        }
     }
 
     @Override
     public void waitTurn() {
         startWaiting();
+    }
+
+    @Override
+    public void normalTurn(int turnNum) {
+        TextView rushHourText = (TextView) findViewById(R.id.rushHourTextView);
+        rushHourText.setVisibility(View.GONE);
+        newTurn(turnNum);
+    }
+
+    @Override
+    public void rushHourTurn(int turnNum, int rushHourCardNum) {
+        TextView rushHourText = (TextView) findViewById(R.id.rushHourTextView);
+        String rushHour = "Rush Hour: Card " + rushHourCardNum + " / 5";
+        rushHourText.setText(rushHour);
+        rushHourText.setVisibility(View.VISIBLE);
+        newTurn(turnNum);
     }
 
     @Override

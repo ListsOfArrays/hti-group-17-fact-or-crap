@@ -6,19 +6,16 @@ import java.security.SecureRandom;
  * Created by Jacob on 3/23/2017.
  */
 
-public class AI {
-    private final Object lock;
+public class AI extends Player {
     private final SecureRandom rng;
-    private final Player toControl;
     private int realTurnNum;
 
-    public AI(Player toControl) {
-        lock = new Object();
+    public AI(String name) {
+        super(name);
         rng = new SecureRandom();
-        this.toControl = toControl;
     }
 
-    public int secondsToWaitInMilliseconds(int mean, int range) {
+    private int secondsToWaitInMilliseconds(int mean, int range) {
         double clippedGaussian = rng.nextGaussian() / 2;
         if (clippedGaussian < 0)
             clippedGaussian = -clippedGaussian;
@@ -29,7 +26,7 @@ public class AI {
         return (int) (millisecondsToWait * 1000);
     }
 
-    public void newTurn(final int turnNum) {
+    private void newTurn(final int turnNum) {
         realTurnNum = turnNum;
         final boolean guess = rng.nextBoolean();
         final int millisecondsToWait = secondsToWaitInMilliseconds(5, 4);
@@ -42,14 +39,14 @@ public class AI {
                 }
                 finally {
                     if (turnNum == realTurnNum) {
-                        toControl.guess(guess, turnNum);
+                        guess(guess, turnNum);
                     }
                 }
             }
         }).start();
     }
 
-    public void quickGuess(final int turnNum) {
+    private void quickGuess(final int turnNum) {
         realTurnNum = turnNum;
         final int millisecondsToWait = secondsToWaitInMilliseconds(3, 2);
         final boolean guess = rng.nextBoolean();
@@ -62,14 +59,28 @@ public class AI {
                 }
                 finally {
                     if (turnNum == realTurnNum) {
-                        toControl.guess(guess, turnNum);
+                        guess(guess, turnNum);
                     }
                 }
             }
         }).start();
     }
 
-    public Player getPlayer() {
-        return toControl;
+    @Override
+    public void normalTurn(int turnNum) {
+        newTurn(turnNum);
+    }
+
+    @Override
+    public void rushHourTurn(int turnNum, int rushHourCardNum) {
+        quickGuess(turnNum);
+    }
+
+    @Override
+    public void endedGame() {
+    }
+
+    @Override
+    public void waitTurn() {
     }
 }

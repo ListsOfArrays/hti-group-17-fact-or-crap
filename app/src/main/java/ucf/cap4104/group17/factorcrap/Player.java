@@ -4,7 +4,7 @@ package ucf.cap4104.group17.factorcrap;
  * Created by Jacob on 3/23/2017.
  */
 
-public class Player implements NetworkConnectionStub.NetworkCallback {
+public abstract class Player implements NetworkConnectionStub.NetworkCallback {
     private final String name;
     private final NetworkConnectionStub connection;
     private boolean won;
@@ -45,4 +45,9 @@ public class Player implements NetworkConnectionStub.NetworkCallback {
     public void onNetworkCallback(int points) {
         incPoints(points);
     }
+
+    public abstract void normalTurn(int turnNum);
+    public abstract void rushHourTurn(int turnNum, int rushHourCardNum);
+    public abstract void endedGame();
+    public abstract void waitTurn();
 }
