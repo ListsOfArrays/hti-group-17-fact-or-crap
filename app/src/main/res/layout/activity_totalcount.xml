@@ -10,23 +10,25 @@
         android:id="@+id/table"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:contentDescription="@string/a_table"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_table"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp" />
+        app:srcCompat="@drawable/table3" />
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
         android:orientation="horizontal"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         tools:background="@color/cardview_light_background">
@@ -35,10 +37,11 @@
             android:id="@+id/singleToken"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
             android:layout_weight="1"
+            android:contentDescription="@string/string_a_single_token_next_to_the_score"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:srcCompat="@drawable/ic_single_token" />
@@ -47,12 +50,12 @@
             android:id="@+id/pointsText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
             android:layout_marginBottom="8dp"
-            android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="12dp"
             android:layout_weight="1"
-            android:text="Token Count: 0"
+            android:text="@string/token_count_0"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toRightOf="@+id/singleToken" />
     </LinearLayout>
@@ -61,7 +64,7 @@
         android:id="@+id/rushHourTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Rush Hour: Card 1 / 5"
+        android:text="@string/rush_hour_card_1_5"
         android:textAppearance="@android:style/TextAppearance.Large"
         android:visibility="visible"
         app:layout_constraintHorizontal_bias="0.506"
@@ -91,7 +94,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
             android:ems="10"
-            android:text="SAMPLE: When a male penguin falls in love with female penguin, he searches the entire beach to find the perfect pebble to present to her."
+            android:text="@string/sample_when_a_male_penguin_falls_in_love_with_female_penguin_he_searches_the_entire_beach_to_find_the_perfect_pebble_to_present_to_her"
             android:textAppearance="@android:style/TextAppearance.Medium"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -104,22 +107,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="48dp"
-        android:text="FACT"
+        android:text="@string/fact"
         android:layout_marginStart="64dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginLeft="64dp" />
+        app:layout_constraintLeft_toLeftOf="parent" />
 
     <Button
         android:id="@+id/button2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="48dp"
-        android:text="CRAP"
+        android:text="@string/crap"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginEnd="64dp"
-        android:layout_marginRight="64dp" />
+        android:layout_marginEnd="64dp" />
 
     <ProgressBar
         android:id="@+id/progressBar"
@@ -144,19 +145,12 @@
         android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:contentDescription="@string/a_pile_of_tokens_on_the_table"
         app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/rushHourTextView"
         app:srcCompat="@drawable/ic_4_token" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@drawable/ic_table"
-        tools:layout_editor_absoluteX="353dp"
-        tools:layout_editor_absoluteY="254dp"
-        android:id="@+id/textView5" />
 
 
 </android.support.constraint.ConstraintLayout>

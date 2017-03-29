@@ -7,10 +7,10 @@ package ucf.cap4104.group17.factorcrap;
 public class RealPlayer extends Player {
 
     public interface Listener {
-        void normalTurn(int turnNum);
-        void rushHourTurn(int turnNum, int rushHourCardNum);
+        void normalTurn(int turnNum, CardDescription currentCard);
+        void rushHourTurn(int turnNum, int rushHourCardNum, CardDescription currentCard);
         void endedGame();
-        void waitTurn();
+        void waitTurn(CardDescription currentCard);
         void dealtRushHourCard(Player[] chooseFrom, int authCode);
     }
 
@@ -22,8 +22,8 @@ public class RealPlayer extends Player {
     }
 
     @Override
-    public void normalTurn(int turnNum) {
-        turnListener.normalTurn(turnNum);
+    public void normalTurn(int turnNum, CardDescription currentCard) {
+        turnListener.normalTurn(turnNum, currentCard);
     }
 
     @Override
@@ -32,8 +32,8 @@ public class RealPlayer extends Player {
     }
 
     @Override
-    public void rushHourTurn(int turnNum, int rushHourCardNum) {
-        turnListener.rushHourTurn(turnNum, rushHourCardNum);
+    public void rushHourTurn(int turnNum, int rushHourCardNum, CardDescription currentCard) {
+        turnListener.rushHourTurn(turnNum, rushHourCardNum, currentCard);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class RealPlayer extends Player {
     }
 
     @Override
-    public void waitTurn() {
-        turnListener.waitTurn();
+    public void waitTurn(CardDescription currentCard) {
+        turnListener.waitTurn(currentCard);
     }
 }

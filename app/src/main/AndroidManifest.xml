@@ -35,7 +35,8 @@
 
         <activity
             android:name=".Totalcount"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait"/>
 
     </application>
 

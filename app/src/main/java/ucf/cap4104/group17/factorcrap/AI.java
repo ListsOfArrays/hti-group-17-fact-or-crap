@@ -67,7 +67,7 @@ public class AI extends Player {
     }
 
     @Override
-    public void normalTurn(int turnNum) {
+    public void normalTurn(int turnNum, CardDescription currentCard) {
         newTurn(turnNum);
     }
 
@@ -77,7 +77,7 @@ public class AI extends Player {
     }
 
     @Override
-    public void rushHourTurn(int turnNum, int rushHourCardNum) {
+    public void rushHourTurn(int turnNum, int rushHourCardNum, CardDescription currentCard) {
         quickGuess(turnNum);
     }
 
@@ -86,6 +86,6 @@ public class AI extends Player {
     }
 
     @Override
-    public void waitTurn() {
+    public void waitTurn(CardDescription currentCard) {
     }
 }

@@ -83,19 +83,18 @@ public class Totalcount extends AppCompatActivity implements RealPlayer.Listener
         outState.putString(PLAYER, gson.toJson(player));
     }
 
-    private void newTurn(int turnNum) {
+    private void newTurn(int turnNum, CardDescription cardDescription) {
         this.turnNum = turnNum;
         final TextView cardContents = (TextView) findViewById(R.id.theCardContents);
-        cardContents.setText(RoundManager.INSTANCE.getCurrentCard().getDescription());
+        cardContents.setText(cardDescription.getDescription());
         String points = "Token Count: " + player.getPoints();
-
         final TextView pointsText = (TextView) findViewById(R.id.pointsText);
         pointsText.setText(points);
         stopWaiting();
     }
 
     @Override
-    public void waitTurn() {
+    public void waitTurn(CardDescription currentCard) {
         startWaiting();
     }
 
@@ -105,19 +104,19 @@ public class Totalcount extends AppCompatActivity implements RealPlayer.Listener
     }
 
     @Override
-    public void normalTurn(int turnNum) {
+    public void normalTurn(int turnNum, CardDescription currentCard) {
         TextView rushHourText = (TextView) findViewById(R.id.rushHourTextView);
         rushHourText.setVisibility(View.GONE);
-        newTurn(turnNum);
+        newTurn(turnNum, currentCard);
     }
 
     @Override
-    public void rushHourTurn(int turnNum, int rushHourCardNum) {
+    public void rushHourTurn(int turnNum, int rushHourCardNum, CardDescription currentCard) {
         TextView rushHourText = (TextView) findViewById(R.id.rushHourTextView);
-        String rushHour = "Rush Hour: Card " + rushHourCardNum + " / 5";
+        String rushHour = "Rush Hour: FullCard " + rushHourCardNum + " / 5";
         rushHourText.setText(rushHour);
         rushHourText.setVisibility(View.VISIBLE);
-        newTurn(turnNum);
+        newTurn(turnNum, currentCard);
     }
 
     @Override

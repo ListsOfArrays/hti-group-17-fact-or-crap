@@ -1,9 +1,6 @@
 package ucf.cap4104.group17.factorcrap;
 
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.media.RingtoneManager;
 import android.support.v4.app.NotificationCompat;
 
@@ -18,9 +15,9 @@ import java.util.Random;
 public enum RoundManager {
     INSTANCE();
 
-    private Card currentCard;
+    private FullCard currentFullCard;
     private boolean firstCorrect;
-    private Card roundCards[];
+    private FullCard roundFullCards[];
     private int roundNum;
     private int tokensLeft;
     private int currentPlayersCount;
@@ -32,9 +29,9 @@ public enum RoundManager {
     private Context context;
 
     public void startGame(RealPlayer realPlayer, Context context) {
-        ArrayList<Card> list = Card.getCards();
+        ArrayList<FullCard> list = FullCard.getCards();
         Collections.shuffle(list);
-        roundCards = list.toArray(new Card[list.size()]);
+        roundFullCards = list.toArray(new FullCard[list.size()]);
 
         roundNum = 0;
         this.tokensLeft = list.size();
@@ -55,7 +52,7 @@ public enum RoundManager {
     private void nextRound() {
         turnNum += 1;
         firstCorrect = false;
-        if (roundNum < roundCards.length && tokensLeft > 0) {
+        if (roundNum < roundFullCards.length && tokensLeft > 0) {
             // during rush hour give new cards only to those subscribed
             if (rushHourPlayers != null) {
                 if (rushHourRounds > 0) {
@@ -75,7 +72,7 @@ public enum RoundManager {
             }
             // not rush hour or sudden death: and normal card round
             else if (rng.nextInt(10) != 0) {
-                currentCard = roundCards[roundNum++];
+                currentFullCard = roundFullCards[roundNum++];
                 firstCorrect = true;
                 currentPlayersCount = allPlayersCount;
             }
@@ -174,9 +171,9 @@ public enum RoundManager {
         }
         // tie, sudden death!
         else if (bestPlayers.size() > 1) {
-            ArrayList<Card> list = Card.getCards();
+            ArrayList<FullCard> list = FullCard.getCards();
             Collections.shuffle(list);
-            roundCards = list.toArray(new Card[list.size()]);
+            roundFullCards = list.toArray(new FullCard[list.size()]);
             roundNum = 0;
             this.tokensLeft = list.size();
             activateSuddenDeath(bestPlayers);
@@ -197,16 +194,12 @@ public enum RoundManager {
             player.endedGame();
     }
 
-    public Card getCurrentCard() {
-        return currentCard;
-    }
-
     private final Object threadLock = new Object();
     public void makeGuess(boolean guessedTrue, NetworkConnectionStub.NetworkCallback networkCallback, int turnNum) {
         synchronized (threadLock) {
             currentPlayersCount -= 1;
             if (turnNum == this.turnNum) {
-                if (guessedTrue == currentCard.getTruthValue()) {
+                if (guessedTrue == currentFullCard.getTruthValue()) {
                     // first & correct!
                     if (firstCorrect && tokensLeft > 1) {
                         tokensLeft -= 2;

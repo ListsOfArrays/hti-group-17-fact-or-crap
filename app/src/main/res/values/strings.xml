@@ -31,4 +31,13 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="a_pile_of_tokens_on_the_table">A pile of tokens on the table.</string>
+    <string name="a_single_token_next_to_the_score">A single token next to the score.</string>
+    <string name="string_a_single_token_next_to_the_score" />
+    <string name="a_table">A table.</string>
+    <string name="crap">CRAP</string>
+    <string name="fact">FACT</string>
+    <string name="rush_hour_card_1_5">Rush Hour: Card 1 / 5</string>
+    <string name="sample_when_a_male_penguin_falls_in_love_with_female_penguin_he_searches_the_entire_beach_to_find_the_perfect_pebble_to_present_to_her">SAMPLE: When a male penguin falls in love with female penguin, he searches the entire beach to find the perfect pebble to present to her.</string>
+    <string name="token_count_0">Token Count: 0</string>
 </resources>
