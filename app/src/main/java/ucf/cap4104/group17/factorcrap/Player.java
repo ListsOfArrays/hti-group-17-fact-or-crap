@@ -10,9 +10,9 @@ public class Player implements NetworkConnectionStub.NetworkCallback {
     private boolean won;
     private int points;
 
-    public Player(String name, NetworkConnectionStub connection) {
+    public Player(String name) {
         this.name = name;
-        this.connection = connection;
+        this.connection = new NetworkConnectionStub();
         points = 0;
         won = false;
     }

@@ -8,35 +8,38 @@ import java.util.Random;
  * Created by Jacob on 3/23/2017.
  */
 
-public class RoundManager {
-    private Object lock;
+public enum RoundManager {
+    INSTANCE();
 
     private Card currentCard;
     private boolean first;
-    private final Card roundCards[];
+    private Card roundCards[];
     private int roundNum;
     private int tokensLeft;
     private int numPlayerPlayed;
-    private final Player realPlayer;
+    private Player realPlayer;
     private AI fakePlayerList[];
     private Random rng;
+    private TurnListener listener;
 
-    private static final int RUSH_HOUR_TIME = 60_000; // 60 seconds
+    private final int RUSH_HOUR_TIME = 60_000; // 60 seconds
 
-    public RoundManager(int tokensLeft, Player realPlayer) {
-        this.realPlayer = realPlayer;
-
-        lock = new Object();
-
+    public void startGame(TurnListener turnListener, Player realPlayer) {
         ArrayList<Card> list = Card.getCards();
         Collections.shuffle(list);
         roundCards = list.toArray(new Card[list.size()]);
+        listener = turnListener;
+        this.realPlayer = realPlayer;
 
         roundNum = 0;
-        this.tokensLeft = tokensLeft;
+        this.tokensLeft = list.size();
 
         rng = new Random();
-        fakePlayerList = new AI[1 + rng.nextInt(8)];
+        String[] nameList = new String[] {"Robert", "Wendy (AI)", "Dave", "Mary", "John", "Valerie (AI)", "armsDealer"};
+        fakePlayerList = new AI[1 + rng.nextInt(7)];
+        for (int i = 0; i < fakePlayerList.length; i++) {
+            fakePlayerList[i] = new AI(new Player(nameList[i]));
+        }
 
         nextRound();
     }
@@ -50,17 +53,20 @@ public class RoundManager {
                 for (AI ai : fakePlayerList) {
                     ai.newTurn();
                 }
+                listener.newTurn(false, 0);
             }
             // randomly deal a rush hour card
             else {
                 if (rng.nextBoolean()) {
                     rushHour(realPlayer);
+                    listener.newTurn(true, 5);
                 } else {
                     rushHour(fakePlayerList[rng.nextInt(fakePlayerList.length)]);
+                    listener.waitTurn();
                 }
             }
         } else {
-            endGame();
+            tryToEndGame();
         }
     }
 
@@ -99,12 +105,12 @@ public class RoundManager {
 
     }
 
-    private void endGame() {
+    private void tryToEndGame() {
         int mostPoints = realPlayer.getPoints();
         ArrayList<AI> bestAI = new ArrayList<>();
 
         for (AI ai : fakePlayerList) {
-            Player fake = ai.onEnd();
+            Player fake = ai.getPlayer();
             if (fake.getPoints() == mostPoints) {
                 bestAI.add(ai);
             } else if (fake.getPoints() > mostPoints) {
@@ -124,7 +130,7 @@ public class RoundManager {
         }
         // one AI won.
         else if (bestAI.size() == 1) {
-            bestAI.get(0).onEnd().setWon(true);
+            bestAI.get(0).getPlayer().setWon(true);
             someoneWon();
         }
         // multiple AI tied, sudden death!
@@ -138,15 +144,33 @@ public class RoundManager {
     }
 
     private void someoneWon() {
-
     }
 
+    public Card getCurrentCard() {
+        return currentCard;
+    }
 
+    private final Object threadLock = new Object();
     public void makeGuess(boolean guessedTrue, NetworkConnectionStub.NetworkCallback networkCallback) {
-        synchronized (lock) {
+        synchronized (threadLock) {
             if (guessedTrue == currentCard.getTruthValue()) {
-
+                networkCallback.onNetworkCallback(2);
             }
         }
+    }
+
+    public interface TurnListener {
+        void newTurn(boolean isRushHour, int cardNum);
+        void endedGame();
+        void waitTurn();
+    }
+
+    public Player[] getResults() {
+        Player[] list = new Player[fakePlayerList.length + 1];
+        for(int i = 0; i < fakePlayerList.length; i++) {
+            list[i] = fakePlayerList[i].getPlayer();
+        }
+        list[fakePlayerList.length] = realPlayer;
+        return list;
     }
 }

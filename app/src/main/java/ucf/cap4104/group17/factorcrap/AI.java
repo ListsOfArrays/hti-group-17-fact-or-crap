@@ -17,7 +17,7 @@ public class AI {
         this.toControl = toControl;
     }
 
-    public int millisecondsToWait(int mean, int range) {
+    public int secondsToWaitInMilliseconds(int mean, int range) {
         double clippedGaussian = rng.nextGaussian() / 2;
         if (clippedGaussian < 0)
             clippedGaussian = -clippedGaussian;
@@ -30,7 +30,7 @@ public class AI {
 
     public void newTurn() {
         final boolean guess = rng.nextBoolean();
-        final int millisecondsToWait = millisecondsToWait(10, 7);
+        final int millisecondsToWait = secondsToWaitInMilliseconds(5, 4);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -46,7 +46,7 @@ public class AI {
     }
 
     public void quickGuess() {
-        final int millisecondsToWait = millisecondsToWait(7, 3);
+        final int millisecondsToWait = secondsToWaitInMilliseconds(3, 2);
         final boolean guess = rng.nextBoolean();
         new Thread(new Runnable() {
             @Override
@@ -62,7 +62,7 @@ public class AI {
         }).start();
     }
 
-    public Player onEnd() {
+    public Player getPlayer() {
         return toControl;
     }
 }

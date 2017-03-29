@@ -6,14 +6,9 @@ package ucf.cap4104.group17.factorcrap;
  */
 
 public class NetworkConnectionStub {
-    private final RoundManager manager;
-
-    public NetworkConnectionStub(RoundManager manager) {
-        this.manager = manager;
-    }
 
     public void sendGuess(boolean guessedTrue, NetworkCallback networkCallback) {
-        manager.makeGuess(guessedTrue, networkCallback);
+        RoundManager.INSTANCE.makeGuess(guessedTrue, networkCallback);
     }
 
     public interface NetworkCallback {

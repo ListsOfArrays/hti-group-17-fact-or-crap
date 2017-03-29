@@ -1,5 +1,6 @@
 package ucf.cap4104.group17.factorcrap;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 

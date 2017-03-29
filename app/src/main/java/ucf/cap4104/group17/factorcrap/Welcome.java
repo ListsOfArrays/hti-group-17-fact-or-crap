@@ -3,7 +3,9 @@ package ucf.cap4104.group17.factorcrap;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
@@ -20,6 +22,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.EditText;
 
 public class Welcome extends AppCompatActivity {
 
@@ -73,17 +76,23 @@ public class Welcome extends AppCompatActivity {
             builder.setView(R.layout.dialog_layout)
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                        if (finalType.equals("new")) {
-                            getActivity().startActivity(new Intent(getContext(), Choice.class));
-                        } else {
-                            getActivity().startActivity(new Intent(getContext(), Totalcount.class));
-                        }
-                        getActivity().finish();
+                            View view = getView();
+                            if (view != null) {
+                                SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
+                                EditText input = (EditText) view.findViewById(R.id.editText4);
+                                pref.edit().putString("NAME", input.getText().toString()).apply();
+                            }
+                            if (finalType.equals("new")) {
+                                getActivity().startActivity(new Intent(getContext(), Choice.class));
+                            } else {
+                                getActivity().startActivity(new Intent(getContext(), Totalcount.class));
+                            }
+                            getActivity().finish();
                         }
                     })
                     .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                        dismiss();
+                            dismiss();
                         }
                     });
             // Create the AlertDialog object and return it
