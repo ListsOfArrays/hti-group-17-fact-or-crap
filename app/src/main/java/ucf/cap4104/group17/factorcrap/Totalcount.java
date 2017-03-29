@@ -101,7 +101,7 @@ public class Totalcount extends AppCompatActivity implements RealPlayer.Listener
 
     @Override
     public void dealtRushHourCard(Player[] chooseFrom, int authCode) {
-
+        //TODO: https://developer.android.com/guide/topics/ui/dialogs.html#AddingAList
     }
 
     @Override

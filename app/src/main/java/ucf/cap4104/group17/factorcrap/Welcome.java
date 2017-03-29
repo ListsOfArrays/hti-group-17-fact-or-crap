@@ -25,6 +25,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
+
+import java.util.Random;
 
 public class Welcome extends AppCompatActivity {
 
@@ -32,6 +35,8 @@ public class Welcome extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
+
+        Random rng = new Random();
 
         Button submitSession = (Button) findViewById(R.id.button3);
         submitSession.setOnClickListener(new View.OnClickListener() {
@@ -48,6 +53,18 @@ public class Welcome extends AppCompatActivity {
                 NameFragment.showDialog("new", getSupportFragmentManager());
             }
         });
+
+        TextView view = (TextView) findViewById(R.id.editText);
+        // set it to "no internet"
+        if (rng.nextBoolean()) {
+            newSession.setText("Start New AI-Based\nOffline Session");
+            submitSession.setVisibility(View.GONE);
+            view.setVisibility(View.GONE);
+        } else {
+            newSession.setText("Start New\nOnline Session");
+            submitSession.setVisibility(View.VISIBLE);
+            view.setVisibility(View.VISIBLE);
+        }
     }
 
     public static class NameFragment extends DialogFragment {
