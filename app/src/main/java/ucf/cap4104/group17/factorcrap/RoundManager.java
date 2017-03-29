@@ -1,7 +1,5 @@
 package ucf.cap4104.group17.factorcrap;
 
-import android.support.annotation.Nullable;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
@@ -40,7 +38,7 @@ public enum RoundManager {
             playerList[i] = new AI(nameList[i - 1]);
         }
         playerList[0] = realPlayer;
-
+        suddenDeathPlayers = null;
         allPlayersCount = playerList.length;
         nextRound();
     }
@@ -49,7 +47,10 @@ public enum RoundManager {
         turnNum += 1;
         firstCorrect = false;
         if (roundNum < roundCards.length && tokensLeft > 0) {
-            if (rng.nextInt(10) != 0) {
+            // during sudden death, always use rush hour
+            if (suddenDeathPlayers != null) {
+                startRushHour(suddenDeathPlayers);
+            } else if (rng.nextInt(10) != 0) {
                 currentCard = roundCards[roundNum++];
                 firstCorrect = true;
                 currentPlayersCount = allPlayersCount;
@@ -57,19 +58,26 @@ public enum RoundManager {
             // randomly deal a rush hour card
             else {
                 currentPlayersCount = 1;
+                ArrayList<Player> rushHourList = new ArrayList<>(1);
                 if (rng.nextBoolean()) {
-                    rushHour(playerList[0]);
+                    rushHourList.add(playerList[0]);
                 } else {
-                    rushHour(playerList[rng.nextInt(playerList.length - 1) + 1]);
+                    rushHourList.add(playerList[rng.nextInt(playerList.length - 1) + 1]);
                 }
+                startRushHour(rushHourList);
             }
         } else {
             tryToEndGame();
         }
     }
 
-    private void rushHour(Player realPlayer) {
+    private ArrayList<Player> suddenDeathPlayers;
+    private ArrayList<Player> rushHourPlayers;
+
+    private void startRushHour(final ArrayList<Player> players) {
         final int endRound = turnNum + 5;
+        rushHourPlayers = players;
+
         // start timer
         new Thread(new Runnable() {
             @Override
@@ -80,11 +88,14 @@ public enum RoundManager {
                 } finally {
                     if (turnNum < endRound) {
                         turnNum = endRound;
+                        rushHourPlayers = null;
                         nextRound();
                     }
                 }
             }
         }).start();
+
+        rushHourRound();
     }
 
     private void rushHourRound() {
@@ -96,12 +107,18 @@ public enum RoundManager {
 
     private void tryToEndGame() {
         turnNum += 1;
-        roundNum = 0;
         int mostPoints = playerList[0].getPoints();
 
         // note: we don't add the first player until the for loop below
         ArrayList<Player> bestPlayers = new ArrayList<>();
-        for (Player player : playerList) {
+        Player[] currentPlayers;
+        if (suddenDeathPlayers != null) {
+            currentPlayers = suddenDeathPlayers.toArray(new Player[suddenDeathPlayers.size()]);
+        } else {
+            currentPlayers = playerList;
+        }
+
+        for (Player player : currentPlayers) {
             // tie
             if (player.getPoints() == mostPoints) {
                 bestPlayers.add(player);
@@ -121,7 +138,12 @@ public enum RoundManager {
         }
         // tie, sudden death!
         else if (bestPlayers.size() > 1) {
-            suddenDeath(bestPlayers);
+            ArrayList<Card> list = Card.getCards();
+            Collections.shuffle(list);
+            roundCards = list.toArray(new Card[list.size()]);
+            roundNum = 0;
+            this.tokensLeft = list.size();
+            activateSuddenDeath(bestPlayers);
         }
         // the universe has ended!
         else if (bestPlayers.size() == 0) {
@@ -129,8 +151,9 @@ public enum RoundManager {
         }
     }
 
-    private void suddenDeath(ArrayList<Player> bestPlayers) {
-
+    private void activateSuddenDeath(ArrayList<Player> bestPlayers) {
+        suddenDeathPlayers = bestPlayers;
+        nextRound();
     }
 
     private void someoneWon() {
