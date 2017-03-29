@@ -126,11 +126,16 @@ public enum RoundManager {
 
     int rushHourCardCode = 0;
 
-    public void sendRushHourCardTo(Player toSendTo, int authCode) {
+    public void sendRushHourCardTo(String toSendTo, int authCode) {
         if (authCode == rushHourCardCode) {
             currentPlayersCount = 1;
             ArrayList<Player> rushHourList = new ArrayList<>(1);
-            rushHourList.add(toSendTo);
+            for (Player player : playerList) {
+                if (player.getName().equals(toSendTo)) {
+                    rushHourList.add(player);
+                    break;
+                }
+            }
             startRushHour(rushHourList);
         }
     }

@@ -1,14 +1,20 @@
 package ucf.cap4104.group17.factorcrap;
 
+import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NotificationCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -107,11 +113,10 @@ public class Totalcount extends AppCompatActivity implements RealPlayer.Listener
         stopWaiting();
     }
 
-    @Override
-    public void someoneGotRushHour() {
+    private void giveNotification(String message) {
         Notification notification = new NotificationCompat.Builder(this).setSmallIcon(R.drawable.ic_rush_hour)
                 .setContentTitle("Fact or Crap")
-                .setContentText("A Rush Hour card has been dealt!.")
+                .setContentText(message)
                 .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                 .setVibrate(new long[]{10, 700})
                 .setAutoCancel(true)
@@ -123,6 +128,11 @@ public class Totalcount extends AppCompatActivity implements RealPlayer.Listener
     }
 
     @Override
+    public void someoneGotRushHour() {
+        giveNotification("A Rush Hour card has been dealt!.");
+    }
+
+    @Override
     public void waitTurn(CardDescription currentCard) {
         TextView rushHourText = (TextView) findViewById(R.id.rushHourTextView);
         rushHourText.setVisibility(View.GONE);
@@ -131,7 +141,51 @@ public class Totalcount extends AppCompatActivity implements RealPlayer.Listener
 
     @Override
     public void dealtRushHourCard(Player[] chooseFrom, int authCode) {
-        //TODO: https://developer.android.com/guide/topics/ui/dialogs.html#AddingAList
+        RushHourSelectFragment.showRushHourSelectFragement(getSupportFragmentManager(), chooseFrom, authCode);
+    }
+
+    /**
+     * Shows selection for rush hour who to send the card to
+     */
+    public static class RushHourSelectFragment extends DialogFragment {
+        private static String PLAYER_NAMES = "PLAYER_NAMES";
+        private static String AUTH_CODE = "AUTH_CODE";
+
+        public static void showRushHourSelectFragement(FragmentManager fragmentManager, Player[] toChooseFrom, int authCode) {
+            RushHourSelectFragment dialog = new RushHourSelectFragment();
+            Bundle args = new Bundle();
+
+            String[] names = new String[toChooseFrom.length];
+            for (int i = 0; i < toChooseFrom.length; i++) {
+                names[i] = toChooseFrom[i].getName();
+            }
+
+            args.putStringArray(PLAYER_NAMES, names);
+            args.putInt(AUTH_CODE, authCode);
+            dialog.setArguments(args);
+            dialog.show(fragmentManager, "RushHourSelectFragment");
+        }
+
+        private String[] playerNames;
+        private int authCode;
+
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            playerNames = getArguments().getStringArray(PLAYER_NAMES);
+            authCode = getArguments().getInt(AUTH_CODE);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle("Pick player to send Rush Hour card to.")
+                    .setItems(playerNames, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            RoundManager.INSTANCE.sendRushHourCardTo(playerNames[which], authCode);
+                            dismiss();
+                        }
+                    })
+                    .setCancelable(false);
+            return builder.create();
+        }
     }
 
     @Override

@@ -78,7 +78,7 @@ public class AI extends Player {
 
     @Override
     public void dealtRushHourCard(Player[] chooseFrom, int authCode) {
-        RoundManager.INSTANCE.sendRushHourCardTo(chooseFrom[rng.nextInt(chooseFrom.length)], authCode);
+        RoundManager.INSTANCE.sendRushHourCardTo(chooseFrom[rng.nextInt(chooseFrom.length)].getName(), authCode);
     }
 
     @Override

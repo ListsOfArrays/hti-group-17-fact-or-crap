@@ -2,6 +2,7 @@ package ucf.cap4104.group17.factorcrap;
 
 /**
  * Created by Jacob on 3/29/2017.
+ * This class swallows the Runnable syntax, as well as allowing us to use Player almost like a sublcass.
  */
 
 public class RealPlayer extends Player {
@@ -65,11 +66,21 @@ public class RealPlayer extends Player {
 
     @Override
     public void endedGame() {
-        turnListener.endedGame();
+        turnListener.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                turnListener.endedGame();
+            }
+        });
     }
 
     @Override
-    public void waitTurn(CardDescription currentCard) {
-        turnListener.waitTurn(currentCard);
+    public void waitTurn(final CardDescription currentCard) {
+        turnListener.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                turnListener.waitTurn(currentCard);
+            }
+        });
     }
 }
