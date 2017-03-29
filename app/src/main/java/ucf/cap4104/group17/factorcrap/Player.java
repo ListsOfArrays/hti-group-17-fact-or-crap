@@ -47,7 +47,21 @@ public abstract class Player implements NetworkConnectionStub.NetworkCallback {
     }
 
     public abstract void normalTurn(int turnNum);
+    public abstract void dealtRushHourCard(Player[] chooseFrom, int authCode);
     public abstract void rushHourTurn(int turnNum, int rushHourCardNum);
     public abstract void endedGame();
     public abstract void waitTurn();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Player player = (Player) o;
+        return name.equals(player.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 }

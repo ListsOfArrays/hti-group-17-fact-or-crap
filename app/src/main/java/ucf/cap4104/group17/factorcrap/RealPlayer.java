@@ -11,6 +11,7 @@ public class RealPlayer extends Player {
         void rushHourTurn(int turnNum, int rushHourCardNum);
         void endedGame();
         void waitTurn();
+        void dealtRushHourCard(Player[] chooseFrom, int authCode);
     }
 
     private final Listener turnListener;
@@ -23,6 +24,11 @@ public class RealPlayer extends Player {
     @Override
     public void normalTurn(int turnNum) {
         turnListener.normalTurn(turnNum);
+    }
+
+    @Override
+    public void dealtRushHourCard(Player[] chooseFrom, int authCode) {
+        turnListener.dealtRushHourCard(chooseFrom, authCode);
     }
 
     @Override

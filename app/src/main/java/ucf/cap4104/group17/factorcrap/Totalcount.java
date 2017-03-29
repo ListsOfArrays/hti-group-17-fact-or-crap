@@ -36,7 +36,7 @@ public class Totalcount extends AppCompatActivity implements RealPlayer.Listener
             waiting.setVisibility(View.INVISIBLE);
             TextView rushHourText = (TextView) findViewById(R.id.rushHourTextView);
             rushHourText.setVisibility(View.INVISIBLE);
-            RoundManager.INSTANCE.startGame(player);
+            RoundManager.INSTANCE.startGame(player, this);
         }
 
         final Button fact = (Button) findViewById(R.id.button);
@@ -97,6 +97,11 @@ public class Totalcount extends AppCompatActivity implements RealPlayer.Listener
     @Override
     public void waitTurn() {
         startWaiting();
+    }
+
+    @Override
+    public void dealtRushHourCard(Player[] chooseFrom, int authCode) {
+
     }
 
     @Override

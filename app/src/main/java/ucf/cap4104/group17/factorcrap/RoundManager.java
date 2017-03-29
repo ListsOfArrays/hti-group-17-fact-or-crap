@@ -1,5 +1,12 @@
 package ucf.cap4104.group17.factorcrap;
 
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.media.RingtoneManager;
+import android.support.v4.app.NotificationCompat;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
@@ -22,8 +29,9 @@ public enum RoundManager {
     private Random rng;
     private final int RUSH_HOUR_TIME = 60_000; // 60 seconds
     private int turnNum = 0;
+    private Context context;
 
-    public void startGame(RealPlayer realPlayer) {
+    public void startGame(RealPlayer realPlayer, Context context) {
         ArrayList<Card> list = Card.getCards();
         Collections.shuffle(list);
         roundCards = list.toArray(new Card[list.size()]);
@@ -40,6 +48,7 @@ public enum RoundManager {
         playerList[0] = realPlayer;
         suddenDeathPlayers = null;
         allPlayersCount = playerList.length;
+        this.context = context;
         nextRound();
     }
 
@@ -47,35 +56,68 @@ public enum RoundManager {
         turnNum += 1;
         firstCorrect = false;
         if (roundNum < roundCards.length && tokensLeft > 0) {
+            // during rush hour give new cards only to those subscribed
+            if (rushHourPlayers != null) {
+                if (rushHourRounds > 0) {
+                    rushHourRounds -= 1;
+                } else {
+                    // during sudden death, check to see if someone has won yet.
+                    if (suddenDeathPlayers != null) {
+                        tryToEndGame();
+                    } else {
+                        rushHourPlayers = null;
+                    }
+                }
+            }
             // during sudden death, always use rush hour
-            if (suddenDeathPlayers != null) {
+            else if (suddenDeathPlayers != null) {
                 startRushHour(suddenDeathPlayers);
-            } else if (rng.nextInt(10) != 0) {
+            }
+            // not rush hour or sudden death: and normal card round
+            else if (rng.nextInt(10) != 0) {
                 currentCard = roundCards[roundNum++];
                 firstCorrect = true;
                 currentPlayersCount = allPlayersCount;
             }
             // randomly deal a rush hour card
             else {
-                currentPlayersCount = 1;
-                ArrayList<Player> rushHourList = new ArrayList<>(1);
-                if (rng.nextBoolean()) {
-                    rushHourList.add(playerList[0]);
-                } else {
-                    rushHourList.add(playerList[rng.nextInt(playerList.length - 1) + 1]);
+                NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
+                        .setSmallIcon(R.drawable.ic_rush_hour)
+                        .setContentTitle("Fact or Crap")
+                        .setContentText("A Rush Hour card has been dealt!.")
+                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                        .setVibrate(new long[]{10, 700});
+                Player player = playerList[rng.nextInt(playerList.length)];
+                Player[] notSelfList = new Player[playerList.length - 1];
+                int i = 0;
+                for (Player notSelf : playerList) {
+                    if (player.equals(notSelf)) continue;
+                    notSelfList[i++] = notSelf;
                 }
-                startRushHour(rushHourList);
+                player.dealtRushHourCard(notSelfList, 0);
             }
         } else {
             tryToEndGame();
         }
     }
 
+    int rushHourCardCode = 0;
+    public void sendRushHourCardTo(Player toSendTo, int authCode) {
+        if (authCode == rushHourCardCode) {
+            currentPlayersCount = 1;
+            ArrayList<Player> rushHourList = new ArrayList<>(1);
+            rushHourList.add(toSendTo);
+            startRushHour(rushHourList);
+        }
+    }
+
     private ArrayList<Player> suddenDeathPlayers;
+    int rushHourRounds;
     private ArrayList<Player> rushHourPlayers;
 
     private void startRushHour(final ArrayList<Player> players) {
         final int endRound = turnNum + 5;
+        rushHourRounds = 5;
         rushHourPlayers = players;
 
         // start timer
@@ -88,6 +130,7 @@ public enum RoundManager {
                 } finally {
                     if (turnNum < endRound) {
                         turnNum = endRound;
+                        rushHourRounds = 0;
                         rushHourPlayers = null;
                         nextRound();
                     }
@@ -95,14 +138,7 @@ public enum RoundManager {
             }
         }).start();
 
-        rushHourRound();
-    }
-
-    private void rushHourRound() {
-        turnNum += 1;
-        if (roundNum < roundCards.length && tokensLeft > 0) {
-
-        }
+        nextRound();
     }
 
     private void tryToEndGame() {
