@@ -4,12 +4,14 @@ import android.content.Context;
 import android.media.RingtoneManager;
 import android.support.v4.app.NotificationCompat;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
 /**
  * Created by Jacob on 3/23/2017.
+ * Could use a LOT of abstraction.
  */
 
 public enum RoundManager {
@@ -26,9 +28,12 @@ public enum RoundManager {
     private Random rng;
     private final int RUSH_HOUR_TIME = 60_000; // 60 seconds
     private int turnNum = 0;
-    private Context context;
+    private ArrayList<Player> suddenDeathPlayers;
+    int rushHourRounds;
+    private ArrayList<Player> rushHourGoodPlayers;
+    private Player rushHourEvilSide;
 
-    public void startGame(RealPlayer realPlayer, Context context) {
+    public void startGame(RealPlayer realPlayer) {
         ArrayList<FullCard> list = FullCard.getCards();
         Collections.shuffle(list);
         roundFullCards = list.toArray(new FullCard[list.size()]);
@@ -37,16 +42,22 @@ public enum RoundManager {
         this.tokensLeft = list.size();
 
         rng = new Random();
-        String[] nameList = new String[] {"Robert", "Wendy (AI)", "Dave", "Mary", "John", "Valerie (AI)", "armsDealer"};
+        String[] nameList = new String[]{"Robert", "Wendy (AI)", "Dave", "Mary", "John", "Valerie (AI)", "armsDealer"};
         playerList = new Player[2 + rng.nextInt(7)];
         for (int i = 1; i < playerList.length; i++) {
             playerList[i] = new AI(nameList[i - 1]);
         }
         playerList[0] = realPlayer;
         suddenDeathPlayers = null;
+        rushHourGoodPlayers = null;
         allPlayersCount = playerList.length;
-        this.context = context;
         nextRound();
+    }
+
+    private void endRushHour() {
+        rushHourEvilSide = null;
+        rushHourGoodPlayers = null;
+        rushHourRounds = 0;
     }
 
     private void nextRound() {
@@ -54,15 +65,28 @@ public enum RoundManager {
         firstCorrect = false;
         if (roundNum < roundFullCards.length && tokensLeft > 0) {
             // during rush hour give new cards only to those subscribed
-            if (rushHourPlayers != null) {
+            if (rushHourGoodPlayers != null) {
                 if (rushHourRounds > 0) {
+                    currentFullCard = roundFullCards[roundNum++];
                     rushHourRounds -= 1;
-                } else {
+
+                    ArrayList<Player> notPlaying = new ArrayList<>(playerList.length);
+                    Collections.addAll(notPlaying, playerList);
+                    for (Player player : rushHourGoodPlayers) {
+                        player.rushHourTurn(turnNum, 5 - rushHourRounds + 1, currentFullCard);
+                        // O(n^2)
+                        notPlaying.remove(player);
+                    }
+                    for (Player player : notPlaying) {
+                        player.waitTurn(currentFullCard);
+                    }
+                }
+                // we ran out of rush hour cards.
+                else {
+                    endRushHour();
                     // during sudden death, check to see if someone has won yet.
                     if (suddenDeathPlayers != null) {
                         tryToEndGame();
-                    } else {
-                        rushHourPlayers = null;
                     }
                 }
             }
@@ -75,30 +99,33 @@ public enum RoundManager {
                 currentFullCard = roundFullCards[roundNum++];
                 firstCorrect = true;
                 currentPlayersCount = allPlayersCount;
+                for (Player player : playerList) {
+                    player.normalTurn(turnNum, currentFullCard);
+                }
             }
             // randomly deal a rush hour card
             else {
-                NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
-                        .setSmallIcon(R.drawable.ic_rush_hour)
-                        .setContentTitle("Fact or Crap")
-                        .setContentText("A Rush Hour card has been dealt!.")
-                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-                        .setVibrate(new long[]{10, 700});
                 Player player = playerList[rng.nextInt(playerList.length)];
                 Player[] notSelfList = new Player[playerList.length - 1];
                 int i = 0;
                 for (Player notSelf : playerList) {
+                    notSelf.rushHourAlert();
                     if (player.equals(notSelf)) continue;
                     notSelfList[i++] = notSelf;
                 }
+                rushHourEvilSide = player;
+                rushHourRounds = 5;
                 player.dealtRushHourCard(notSelfList, 0);
             }
-        } else {
+        }
+        // no tokens left
+        else {
             tryToEndGame();
         }
     }
 
     int rushHourCardCode = 0;
+
     public void sendRushHourCardTo(Player toSendTo, int authCode) {
         if (authCode == rushHourCardCode) {
             currentPlayersCount = 1;
@@ -108,14 +135,10 @@ public enum RoundManager {
         }
     }
 
-    private ArrayList<Player> suddenDeathPlayers;
-    int rushHourRounds;
-    private ArrayList<Player> rushHourPlayers;
-
     private void startRushHour(final ArrayList<Player> players) {
         final int endRound = turnNum + 5;
         rushHourRounds = 5;
-        rushHourPlayers = players;
+        rushHourGoodPlayers = players;
 
         // start timer
         new Thread(new Runnable() {
@@ -128,7 +151,7 @@ public enum RoundManager {
                     if (turnNum < endRound) {
                         turnNum = endRound;
                         rushHourRounds = 0;
-                        rushHourPlayers = null;
+                        rushHourGoodPlayers = null;
                         nextRound();
                     }
                 }
@@ -155,7 +178,7 @@ public enum RoundManager {
             // tie
             if (player.getPoints() == mostPoints) {
                 bestPlayers.add(player);
-            // new winner
+                // new winner
             } else if (player.getPoints() > mostPoints) {
                 bestPlayers.clear();
                 mostPoints = player.getPoints();
@@ -195,6 +218,7 @@ public enum RoundManager {
     }
 
     private final Object threadLock = new Object();
+
     public void makeGuess(boolean guessedTrue, NetworkConnectionStub.NetworkCallback networkCallback, int turnNum) {
         synchronized (threadLock) {
             currentPlayersCount -= 1;
@@ -204,20 +228,26 @@ public enum RoundManager {
                     if (firstCorrect && tokensLeft > 1) {
                         tokensLeft -= 2;
                         networkCallback.onNetworkCallback(2);
-                    // either not first or not enough tokens to satisfy, but still correct
+                        // either not first or not enough tokens to satisfy, but still correct
                     } else if (tokensLeft > 0) {
                         tokensLeft -= 1;
+                        if (rushHourEvilSide != null) {
+                            rushHourEvilSide.onNetworkCallback(0);
+                        }
                         networkCallback.onNetworkCallback(1);
-                    // still correct, not enough tokens
+                        // still correct, not enough tokens
                     } else {
                         networkCallback.onNetworkCallback(0);
                     }
                     firstCorrect = false;
-                // not correct
+                    // not correct
                 } else {
+                    if (rushHourEvilSide != null) {
+                        rushHourEvilSide.onNetworkCallback(1);
+                    }
                     networkCallback.onNetworkCallback(0);
                 }
-            // not even the same turn
+                // not even the same turn
             } else {
                 networkCallback.onNetworkCallback(0);
             }

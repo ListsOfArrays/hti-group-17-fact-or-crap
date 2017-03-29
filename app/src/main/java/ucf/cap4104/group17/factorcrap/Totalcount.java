@@ -1,9 +1,14 @@
 package ucf.cap4104.group17.factorcrap;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -36,7 +41,7 @@ public class Totalcount extends AppCompatActivity implements RealPlayer.Listener
             waiting.setVisibility(View.INVISIBLE);
             TextView rushHourText = (TextView) findViewById(R.id.rushHourTextView);
             rushHourText.setVisibility(View.INVISIBLE);
-            RoundManager.INSTANCE.startGame(player, this);
+            RoundManager.INSTANCE.startGame(player);
         }
 
         final Button fact = (Button) findViewById(R.id.button);
@@ -67,6 +72,15 @@ public class Totalcount extends AppCompatActivity implements RealPlayer.Listener
         crap.setEnabled(false);
     }
 
+    private void startWaiting(CardDescription currentCard) {
+        final TextView cardContents = (TextView) findViewById(R.id.theCardContents);
+        cardContents.setText(currentCard.getDescription());
+        String points = "Token Count: " + player.getPoints();
+        final TextView pointsText = (TextView) findViewById(R.id.pointsText);
+        pointsText.setText(points);
+        startWaiting();
+    }
+
     private void stopWaiting() {
         final Button fact = (Button) findViewById(R.id.button);
         final Button crap = (Button) findViewById(R.id.button2);
@@ -94,8 +108,25 @@ public class Totalcount extends AppCompatActivity implements RealPlayer.Listener
     }
 
     @Override
+    public void someoneGotRushHour() {
+        Notification notification = new NotificationCompat.Builder(this).setSmallIcon(R.drawable.ic_rush_hour)
+                .setContentTitle("Fact or Crap")
+                .setContentText("A Rush Hour card has been dealt!.")
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                .setVibrate(new long[]{10, 700})
+                .setAutoCancel(true)
+                .setPriority(Notification.PRIORITY_HIGH)
+                .build();
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(0, notification);
+    }
+
+    @Override
     public void waitTurn(CardDescription currentCard) {
-        startWaiting();
+        TextView rushHourText = (TextView) findViewById(R.id.rushHourTextView);
+        rushHourText.setVisibility(View.GONE);
+        startWaiting(currentCard);
     }
 
     @Override

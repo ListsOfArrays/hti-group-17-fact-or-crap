@@ -46,6 +46,8 @@ public abstract class Player implements NetworkConnectionStub.NetworkCallback {
         incPoints(points);
     }
 
+    public abstract void rushHourAlert();
+
     public abstract void normalTurn(int turnNum, CardDescription currentCard);
     public abstract void dealtRushHourCard(Player[] chooseFrom, int authCode);
     public abstract void rushHourTurn(int turnNum, int rushHourCardNum, CardDescription currentCard);

@@ -15,6 +15,11 @@ public class AI extends Player {
         rng = new SecureRandom();
     }
 
+    @Override
+    public void rushHourAlert() {
+
+    }
+
     private int secondsToWaitInMilliseconds(int mean, int range) {
         double clippedGaussian = rng.nextGaussian() / 2;
         if (clippedGaussian < 0)

@@ -10,8 +10,10 @@ public class RealPlayer extends Player {
         void normalTurn(int turnNum, CardDescription currentCard);
         void rushHourTurn(int turnNum, int rushHourCardNum, CardDescription currentCard);
         void endedGame();
+        void someoneGotRushHour();
         void waitTurn(CardDescription currentCard);
         void dealtRushHourCard(Player[] chooseFrom, int authCode);
+        void runOnUiThread(Runnable action);
     }
 
     private final Listener turnListener;
@@ -22,18 +24,43 @@ public class RealPlayer extends Player {
     }
 
     @Override
-    public void normalTurn(int turnNum, CardDescription currentCard) {
-        turnListener.normalTurn(turnNum, currentCard);
+    public void rushHourAlert() {
+        turnListener.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                turnListener.someoneGotRushHour();
+            }
+        });
     }
 
     @Override
-    public void dealtRushHourCard(Player[] chooseFrom, int authCode) {
-        turnListener.dealtRushHourCard(chooseFrom, authCode);
+    public void normalTurn(final int turnNum, final CardDescription currentCard) {
+        turnListener.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                turnListener.normalTurn(turnNum, currentCard);
+            }
+        });
     }
 
     @Override
-    public void rushHourTurn(int turnNum, int rushHourCardNum, CardDescription currentCard) {
-        turnListener.rushHourTurn(turnNum, rushHourCardNum, currentCard);
+    public void dealtRushHourCard(final Player[] chooseFrom, final int authCode) {
+        turnListener.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                turnListener.dealtRushHourCard(chooseFrom, authCode);
+            }
+        });
+    }
+
+    @Override
+    public void rushHourTurn(final int turnNum, final int rushHourCardNum, final CardDescription currentCard) {
+        turnListener.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                turnListener.rushHourTurn(turnNum, rushHourCardNum, currentCard);
+            }
+        });
     }
 
     @Override
