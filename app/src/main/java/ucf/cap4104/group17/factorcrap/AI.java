@@ -53,8 +53,8 @@ public class AI extends Player {
 
     private void quickGuess(final int turnNum) {
         realTurnNum = turnNum;
-        final int millisecondsToWait = secondsToWaitInMilliseconds(3, 2);
         final boolean guess = rng.nextBoolean();
+        final int millisecondsToWait = secondsToWaitInMilliseconds(3, 2);
         new Thread(new Runnable() {
             @Override
             public void run() {

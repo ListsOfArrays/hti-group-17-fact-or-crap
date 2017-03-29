@@ -66,14 +66,16 @@ public enum RoundManager {
         if (roundNum < roundFullCards.length && tokensLeft > 0) {
             // during rush hour give new cards only to those subscribed
             if (rushHourGoodPlayers != null) {
+                firstCorrect = false;
                 if (rushHourRounds > 0) {
+                    currentPlayersCount = rushHourGoodPlayers.size();
                     currentFullCard = roundFullCards[roundNum++];
                     rushHourRounds -= 1;
 
                     ArrayList<Player> notPlaying = new ArrayList<>(playerList.length);
                     Collections.addAll(notPlaying, playerList);
                     for (Player player : rushHourGoodPlayers) {
-                        player.rushHourTurn(turnNum, 5 - rushHourRounds + 1, currentFullCard);
+                        player.rushHourTurn(turnNum, 5 - rushHourRounds, currentFullCard);
                         // O(n^2)
                         notPlaying.remove(player);
                     }
@@ -87,6 +89,8 @@ public enum RoundManager {
                     // during sudden death, check to see if someone has won yet.
                     if (suddenDeathPlayers != null) {
                         tryToEndGame();
+                    } else {
+                        nextRound();
                     }
                 }
             }
@@ -95,7 +99,7 @@ public enum RoundManager {
                 startRushHour(suddenDeathPlayers);
             }
             // not rush hour or sudden death: and normal card round
-            else if (rng.nextInt(10) != 0) {
+            else if (rng.nextInt(10) > 3) {
                 currentFullCard = roundFullCards[roundNum++];
                 firstCorrect = true;
                 currentPlayersCount = allPlayersCount;
