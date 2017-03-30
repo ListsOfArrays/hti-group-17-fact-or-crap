@@ -6,6 +6,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -19,13 +21,19 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.util.Random;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.URL;
 
 public class Welcome extends AppCompatActivity {
     /**
      * http://stackoverflow.com/a/4239019
      * Author: Alexandre Jasmin
      * licensed under cc by-sa 3.0 with attribution required
+     *
      * @return true, if internet available
      */
     private boolean isNetworkAvailable() {
@@ -33,6 +41,51 @@ public class Welcome extends AppCompatActivity {
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    private void setAccordingToInternet(final boolean hasInternet) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Button newSession = (Button) findViewById(R.id.button4);
+                Button submitSession = (Button) findViewById(R.id.button3);
+                TextView view = (TextView) findViewById(R.id.editText);
+
+                if (hasInternet) {
+                    newSession.setText("Start New\nOnline Session");
+                    submitSession.setVisibility(View.VISIBLE);
+                    view.setVisibility(View.VISIBLE);
+                } else {
+                    newSession.setText("Start New AI-Based\nOffline Session");
+                    submitSession.setVisibility(View.GONE);
+                    view.setVisibility(View.GONE);
+                }
+            }
+        });
+    }
+
+    /**
+     * http://stackoverflow.com/a/27312494
+     * Author: Levit
+     * licensed under cc by-sa 3.0 with attribution required
+     * Checks if the user actually has internet, and not just WiFi
+     */
+    private void checkIfHasInternet() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    int timeoutMs = 1500;
+                    Socket sock = new Socket();
+                    SocketAddress socketAddress = new InetSocketAddress("8.8.8.8", 53);
+                    sock.connect(socketAddress, timeoutMs);
+                    sock.close();
+                    setAccordingToInternet(true);
+                } catch (IOException ignored) {
+                    setAccordingToInternet(false);
+                }
+            }
+        }).start();
     }
 
     @Override
@@ -62,6 +115,7 @@ public class Welcome extends AppCompatActivity {
             newSession.setText("Start New\nOnline Session");
             submitSession.setVisibility(View.VISIBLE);
             view.setVisibility(View.VISIBLE);
+            checkIfHasInternet();
         } else {
             newSession.setText("Start New AI-Based\nOffline Session");
             submitSession.setVisibility(View.GONE);

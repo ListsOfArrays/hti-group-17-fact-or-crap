@@ -1,6 +1,7 @@
 package ucf.cap4104.group17.factorcrap;
 
 import java.security.SecureRandom;
+import java.util.Random;
 
 /**
  * Created by Jacob on 3/23/2017.
@@ -8,12 +9,12 @@ import java.security.SecureRandom;
  */
 
 class AI extends Player {
-    private final SecureRandom rng;
+    private final Random rng;
     private int realTurnNum;
 
-    AI(String name) {
+    AI(String name, long seed) {
         super(name);
-        rng = new SecureRandom();
+        rng = new Random(seed);
     }
 
     @Override
