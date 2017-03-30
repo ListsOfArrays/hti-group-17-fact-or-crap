@@ -27,12 +27,14 @@ public enum RoundManager {
     int rushHourRounds;
     private ArrayList<Player> rushHourGoodPlayers;
     private Player rushHourEvilSide;
+    private boolean endedGame;
 
     public void startGame(RealPlayer realPlayer) {
         ArrayList<FullCard> list = FullCard.getCards();
         Collections.shuffle(list);
         roundFullCards = list.toArray(new FullCard[list.size()]);
 
+        endedGame = false;
         roundNum = 0;
         this.tokensLeft = list.size();
 
@@ -94,7 +96,7 @@ public enum RoundManager {
                 startRushHour(suddenDeathPlayers);
             }
             // not rush hour or sudden death: and normal card round
-            else if (rng.nextInt(10) > 3) {
+            else if (rng.nextInt(10) > 2) {
                 currentFullCard = roundFullCards[roundNum++];
                 firstCorrect = true;
                 currentPlayersCount = allPlayersCount;
@@ -152,8 +154,8 @@ public enum RoundManager {
                     Thread.sleep(RUSH_HOUR_TIME);
                 } catch (InterruptedException ignored) {
                 } finally {
-                    if (turnNum < endRound) {
-                        turnNum = endRound;
+                    if (turnNum <= endRound) {
+                        turnNum = endRound + 1;
                         rushHourRounds = 0;
                         rushHourGoodPlayers = null;
                         nextRound();
@@ -217,8 +219,12 @@ public enum RoundManager {
     }
 
     private void someoneWon() {
-        for (Player player : playerList)
-            player.endedGame();
+        if (!endedGame) {
+            // prevents activity from being called again because listener fires mutiple extra times
+            endedGame = true;
+            for (Player player : playerList)
+                player.endedGame();
+        }
     }
 
     private final Object threadLock = new Object();
