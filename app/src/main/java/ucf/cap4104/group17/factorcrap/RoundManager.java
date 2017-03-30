@@ -1,5 +1,7 @@
 package ucf.cap4104.group17.factorcrap;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
@@ -38,11 +40,18 @@ public enum RoundManager {
         roundNum = 0;
         this.tokensLeft = list.size();
 
-        rng = new Random();
+//        rng = new Random();
+//        long seed = rng.nextLong();
+//        Log.d("seed", "Seed value: " + seed);
+
+        // this is a good seed. Got rush hour, 7 person game, rush hour wait turn, and delivered rush hour.
+//        long seed = -3061875589648820969L;
+        long seed = 0; // 0: got rush hour, rush hour delivered, paused turn 7 person game. lol, first try!
+        rng = new Random(seed);
         String[] nameList = new String[]{"Robert", "Wendy (AI)", "Dave", "Mary", "John", "Valerie (AI)", "armsDealer"};
         playerList = new Player[2 + rng.nextInt(7)];
         for (int i = 1; i < playerList.length; i++) {
-            playerList[i] = new AI(nameList[i - 1]);
+            playerList[i] = new AI(nameList[i - 1], rng.nextLong());
         }
         playerList[0] = realPlayer;
         suddenDeathPlayers = null;
@@ -129,6 +138,7 @@ public enum RoundManager {
 
     public void sendRushHourCardTo(String toSendTo, int authCode) {
         if (authCode == rushHourCardCode) {
+            turnNum += 1;
             currentPlayersCount = 1;
             ArrayList<Player> rushHourList = new ArrayList<>(1);
             for (Player player : playerList) {
