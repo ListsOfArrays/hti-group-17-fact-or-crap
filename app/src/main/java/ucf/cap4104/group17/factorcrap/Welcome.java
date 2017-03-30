@@ -1,9 +1,12 @@
 package ucf.cap4104.group17.factorcrap;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
@@ -19,13 +22,23 @@ import android.widget.TextView;
 import java.util.Random;
 
 public class Welcome extends AppCompatActivity {
+    /**
+     * http://stackoverflow.com/a/4239019
+     * Author: Alexandre Jasmin
+     * licensed under cc by-sa 3.0 with attribution required
+     * @return true, if internet available
+     */
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
-
-        Random rng = new Random();
 
         Button submitSession = (Button) findViewById(R.id.button3);
         submitSession.setOnClickListener(new View.OnClickListener() {
@@ -44,15 +57,15 @@ public class Welcome extends AppCompatActivity {
         });
 
         TextView view = (TextView) findViewById(R.id.editText);
-        // set it to "no internet"
-        if (rng.nextBoolean()) {
-            newSession.setText("Start New AI-Based\nOffline Session");
-            submitSession.setVisibility(View.GONE);
-            view.setVisibility(View.GONE);
-        } else {
+        // set it to "internet"
+        if (isNetworkAvailable()) {
             newSession.setText("Start New\nOnline Session");
             submitSession.setVisibility(View.VISIBLE);
             view.setVisibility(View.VISIBLE);
+        } else {
+            newSession.setText("Start New AI-Based\nOffline Session");
+            submitSession.setVisibility(View.GONE);
+            view.setVisibility(View.GONE);
         }
     }
 
