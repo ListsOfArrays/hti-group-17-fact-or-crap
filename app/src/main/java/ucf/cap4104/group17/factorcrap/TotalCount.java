@@ -156,7 +156,7 @@ public class TotalCount extends AppCompatActivity implements RealPlayer.Listener
 
     @Override
     public void someoneGotRushHour() {
-        giveNotification("A Rush Hour card has been dealt!.");
+        giveNotification("A Rush Hour card has been dealt!");
     }
 
     @Override
