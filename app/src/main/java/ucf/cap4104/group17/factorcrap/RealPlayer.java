@@ -5,21 +5,21 @@ package ucf.cap4104.group17.factorcrap;
  * This class swallows the Runnable syntax, as well as allowing us to use Player almost like a sublcass.
  */
 
-public class RealPlayer extends Player {
+class RealPlayer extends Player {
 
-    public interface Listener {
-        void normalTurn(int turnNum, CardDescription currentCard);
-        void rushHourTurn(int turnNum, int rushHourCardNum, CardDescription currentCard);
+    interface Listener {
+        void normalTurn(int turnNum, CardDescription currentCard, int tokensLeft);
+        void rushHourTurn(int turnNum, int rushHourCardNum, CardDescription currentCard, int tokensLeft);
         void endedGame();
         void someoneGotRushHour();
-        void waitTurn(CardDescription currentCard);
+        void waitTurn(CardDescription currentCard, int tokensLeft);
         void dealtRushHourCard(Player[] chooseFrom, int authCode);
         void runOnUiThread(Runnable action);
     }
 
     private final Listener turnListener;
 
-    public RealPlayer(String name, Listener listener) {
+    RealPlayer(String name, Listener listener) {
         super(name);
         turnListener = listener;
     }
@@ -35,11 +35,11 @@ public class RealPlayer extends Player {
     }
 
     @Override
-    public void normalTurn(final int turnNum, final CardDescription currentCard) {
+    public void normalTurn(final int turnNum, final CardDescription currentCard, final int tokensLeft) {
         turnListener.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                turnListener.normalTurn(turnNum, currentCard);
+                turnListener.normalTurn(turnNum, currentCard, tokensLeft);
             }
         });
     }
@@ -55,11 +55,11 @@ public class RealPlayer extends Player {
     }
 
     @Override
-    public void rushHourTurn(final int turnNum, final int rushHourCardNum, final CardDescription currentCard) {
+    public void rushHourTurn(final int turnNum, final int rushHourCardNum, final CardDescription currentCard, final int tokensLeft) {
         turnListener.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                turnListener.rushHourTurn(turnNum, rushHourCardNum, currentCard);
+                turnListener.rushHourTurn(turnNum, rushHourCardNum, currentCard, tokensLeft);
             }
         });
     }
@@ -75,11 +75,11 @@ public class RealPlayer extends Player {
     }
 
     @Override
-    public void waitTurn(final CardDescription currentCard) {
+    public void waitTurn(final CardDescription currentCard, final int tokensLeft) {
         turnListener.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                turnListener.waitTurn(currentCard);
+                turnListener.waitTurn(currentCard, tokensLeft);
             }
         });
     }

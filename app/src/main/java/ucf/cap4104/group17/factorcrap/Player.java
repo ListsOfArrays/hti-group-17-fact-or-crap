@@ -21,7 +21,7 @@ public abstract class Player implements NetworkConnectionStub.NetworkCallback {
         return name;
     }
 
-    public int getPoints() {
+    int getPoints() {
         return points;
     }
 
@@ -29,15 +29,15 @@ public abstract class Player implements NetworkConnectionStub.NetworkCallback {
         points += pointVal;
     }
 
-    public void setWon(boolean didWin) {
+    void setWon(boolean didWin) {
         won = didWin;
     }
 
-    public boolean won() {
+    boolean won() {
         return won;
     }
 
-    public void guess(boolean guessedTrue, int turnNum) {
+    void guess(boolean guessedTrue, int turnNum) {
         connection.sendGuess(guessedTrue, this, turnNum);
     }
 
@@ -48,11 +48,11 @@ public abstract class Player implements NetworkConnectionStub.NetworkCallback {
 
     public abstract void rushHourAlert();
 
-    public abstract void normalTurn(int turnNum, CardDescription currentCard);
+    public abstract void normalTurn(int turnNum, CardDescription currentCard, int tokensLeft);
     public abstract void dealtRushHourCard(Player[] chooseFrom, int authCode);
-    public abstract void rushHourTurn(int turnNum, int rushHourCardNum, CardDescription currentCard);
+    public abstract void rushHourTurn(int turnNum, int rushHourCardNum, CardDescription currentCard, int tokensLeft);
     public abstract void endedGame();
-    public abstract void waitTurn(CardDescription currentCard);
+    public abstract void waitTurn(CardDescription currentCard, int tokensLeft);
 
     @Override
     public boolean equals(Object o) {

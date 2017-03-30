@@ -1,28 +1,17 @@
 package ucf.cap4104.group17.factorcrap;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -106,7 +95,7 @@ public class Welcome extends AppCompatActivity {
                             if (finalType.equals("new")) {
                                 getActivity().startActivity(new Intent(getContext(), Choice.class));
                             } else {
-                                getActivity().startActivity(new Intent(getContext(), Totalcount.class));
+                                getActivity().startActivity(new Intent(getContext(), TotalCount.class));
                             }
                             getActivity().finish();
                         }

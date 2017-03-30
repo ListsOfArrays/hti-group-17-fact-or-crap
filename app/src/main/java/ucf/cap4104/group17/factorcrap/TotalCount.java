@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -18,16 +19,19 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
 
-public class Totalcount extends AppCompatActivity implements RealPlayer.Listener {
+import java.util.Random;
+
+public class TotalCount extends AppCompatActivity implements RealPlayer.Listener {
     private static String PLAYER = "PLAYER";
-    private static String TURN_NUM = "TURN_NUM";
     private RealPlayer player;
     private int turnNum;
+    private int prevTokens;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +51,7 @@ public class Totalcount extends AppCompatActivity implements RealPlayer.Listener
             waiting.setVisibility(View.INVISIBLE);
             TextView rushHourText = (TextView) findViewById(R.id.rushHourTextView);
             rushHourText.setVisibility(View.INVISIBLE);
+            prevTokens = 9999999;
             RoundManager.INSTANCE.startGame(player);
         }
 
@@ -103,14 +108,36 @@ public class Totalcount extends AppCompatActivity implements RealPlayer.Listener
         outState.putString(PLAYER, gson.toJson(player));
     }
 
-    private void newTurn(int turnNum, CardDescription cardDescription) {
+    private void newTurn(int turnNum, CardDescription cardDescription, int tokensLeft) {
         this.turnNum = turnNum;
         final TextView cardContents = (TextView) findViewById(R.id.theCardContents);
         cardContents.setText(cardDescription.getDescription());
         String points = "Token Count: " + player.getPoints();
         final TextView pointsText = (TextView) findViewById(R.id.pointsText);
         pointsText.setText(points);
+        setTokensImage(tokensLeft);
         stopWaiting();
+    }
+
+    private void setTokensImage(int tokensLeft) {
+        ImageView view = (ImageView) findViewById(R.id.tokenPile);
+        if (prevTokens == 1 && tokensLeft == 0) {
+            view.setImageResource(R.drawable.ic_0_token);
+        } else if (prevTokens > 1 && tokensLeft == 1) {
+            view.setImageResource(R.drawable.ic_1_token);
+        } else if (prevTokens >= 50 && tokensLeft < 50) {
+            view.setImageResource(R.drawable.ic_2_token);
+        } else if (prevTokens >= 100 && tokensLeft < 100) {
+            view.setImageResource(R.drawable.ic_3_token);
+        } else if (prevTokens >= 150 && tokensLeft < 150) {
+            view.setImageResource(R.drawable.ic_4_token);
+        } else if (prevTokens >= 200 && tokensLeft < 200) {
+            view.setImageResource(R.drawable.ic_5_token);
+        } else if (prevTokens >= 250 && tokensLeft < 250) {
+            view.setImageResource(R.drawable.ic_6_token);
+        }
+
+        prevTokens = tokensLeft;
     }
 
     private void giveNotification(String message) {
@@ -133,9 +160,10 @@ public class Totalcount extends AppCompatActivity implements RealPlayer.Listener
     }
 
     @Override
-    public void waitTurn(CardDescription currentCard) {
+    public void waitTurn(CardDescription currentCard, int tokensLeft) {
         TextView rushHourText = (TextView) findViewById(R.id.rushHourTextView);
         rushHourText.setVisibility(View.GONE);
+        setTokensImage(tokensLeft);
         startWaiting(currentCard);
     }
 
@@ -168,40 +196,51 @@ public class Totalcount extends AppCompatActivity implements RealPlayer.Listener
 
         private String[] playerNames;
         private int authCode;
+        private boolean dismissIntentional;
 
         @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             playerNames = getArguments().getStringArray(PLAYER_NAMES);
             authCode = getArguments().getInt(AUTH_CODE);
+            dismissIntentional = false;
 
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setTitle("Pick player to send Rush Hour card to.")
+            builder.setTitle("Pick a player to send a Rush Hour card to.")
                     .setItems(playerNames, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             RoundManager.INSTANCE.sendRushHourCardTo(playerNames[which], authCode);
+                            dismissIntentional = true;
                             dismiss();
                         }
-                    })
-                    .setCancelable(false);
+                    });
             return builder.create();
+        }
+
+        @Override
+        public void onDismiss(DialogInterface dialog) {
+            if (!dismissIntentional) {
+                Random rng = new Random();
+                RoundManager.INSTANCE.sendRushHourCardTo(playerNames[rng.nextInt(playerNames.length)], authCode);
+            }
+            super.onDismiss(dialog);
         }
     }
 
     @Override
-    public void normalTurn(int turnNum, CardDescription currentCard) {
+    public void normalTurn(int turnNum, CardDescription currentCard, int tokensLeft) {
         TextView rushHourText = (TextView) findViewById(R.id.rushHourTextView);
         rushHourText.setVisibility(View.GONE);
-        newTurn(turnNum, currentCard);
+        newTurn(turnNum, currentCard, tokensLeft);
     }
 
     @Override
-    public void rushHourTurn(int turnNum, int rushHourCardNum, CardDescription currentCard) {
+    public void rushHourTurn(int turnNum, int rushHourCardNum, CardDescription currentCard, int tokensLeft) {
         TextView rushHourText = (TextView) findViewById(R.id.rushHourTextView);
-        String rushHour = "Rush Hour: FullCard " + rushHourCardNum + " / 5";
+        String rushHour = "Rush Hour: Card " + rushHourCardNum + " / 5";
         rushHourText.setText(rushHour);
         rushHourText.setVisibility(View.VISIBLE);
-        newTurn(turnNum, currentCard);
+        newTurn(turnNum, currentCard, tokensLeft);
     }
 
     @Override

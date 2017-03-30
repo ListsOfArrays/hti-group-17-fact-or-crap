@@ -4,13 +4,14 @@ import java.security.SecureRandom;
 
 /**
  * Created by Jacob on 3/23/2017.
+ * An AI that plays instead of a human. It guesses w/50% chance of right/wrong
  */
 
-public class AI extends Player {
+class AI extends Player {
     private final SecureRandom rng;
     private int realTurnNum;
 
-    public AI(String name) {
+    AI(String name) {
         super(name);
         rng = new SecureRandom();
     }
@@ -40,7 +41,7 @@ public class AI extends Player {
             public void run() {
                 try {
                     Thread.sleep(millisecondsToWait);
-                } catch (InterruptedException e) {
+                } catch (InterruptedException ignored) {
                 }
                 finally {
                     if (turnNum == realTurnNum) {
@@ -60,7 +61,7 @@ public class AI extends Player {
             public void run() {
                 try {
                     Thread.sleep(millisecondsToWait);
-                } catch (InterruptedException e) {
+                } catch (InterruptedException ignored) {
                 }
                 finally {
                     if (turnNum == realTurnNum) {
@@ -72,7 +73,7 @@ public class AI extends Player {
     }
 
     @Override
-    public void normalTurn(int turnNum, CardDescription currentCard) {
+    public void normalTurn(int turnNum, CardDescription currentCard, int tokensLeft) {
         newTurn(turnNum);
     }
 
@@ -82,7 +83,7 @@ public class AI extends Player {
     }
 
     @Override
-    public void rushHourTurn(int turnNum, int rushHourCardNum, CardDescription currentCard) {
+    public void rushHourTurn(int turnNum, int rushHourCardNum, CardDescription currentCard, int tokensLeft) {
         quickGuess(turnNum);
     }
 
@@ -91,6 +92,6 @@ public class AI extends Player {
     }
 
     @Override
-    public void waitTurn(CardDescription currentCard) {
+    public void waitTurn(CardDescription currentCard, int tokensLeft) {
     }
 }

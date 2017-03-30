@@ -1,10 +1,5 @@
 package ucf.cap4104.group17.factorcrap;
 
-import android.content.Context;
-import android.media.RingtoneManager;
-import android.support.v4.app.NotificationCompat;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
@@ -75,12 +70,12 @@ public enum RoundManager {
                     ArrayList<Player> notPlaying = new ArrayList<>(playerList.length);
                     Collections.addAll(notPlaying, playerList);
                     for (Player player : rushHourGoodPlayers) {
-                        player.rushHourTurn(turnNum, 5 - rushHourRounds, currentFullCard);
+                        player.rushHourTurn(turnNum, 5 - rushHourRounds, currentFullCard, tokensLeft);
                         // O(n^2)
                         notPlaying.remove(player);
                     }
                     for (Player player : notPlaying) {
-                        player.waitTurn(currentFullCard);
+                        player.waitTurn(currentFullCard, tokensLeft);
                     }
                 }
                 // we ran out of rush hour cards.
@@ -104,7 +99,7 @@ public enum RoundManager {
                 firstCorrect = true;
                 currentPlayersCount = allPlayersCount;
                 for (Player player : playerList) {
-                    player.normalTurn(turnNum, currentFullCard);
+                    player.normalTurn(turnNum, currentFullCard, tokensLeft);
                 }
             }
             // randomly deal a rush hour card
@@ -155,7 +150,7 @@ public enum RoundManager {
             public void run() {
                 try {
                     Thread.sleep(RUSH_HOUR_TIME);
-                } catch (InterruptedException e) {
+                } catch (InterruptedException ignored) {
                 } finally {
                     if (turnNum < endRound) {
                         turnNum = endRound;
@@ -233,6 +228,9 @@ public enum RoundManager {
             currentPlayersCount -= 1;
             if (turnNum == this.turnNum) {
                 if (guessedTrue == currentFullCard.getTruthValue()) {
+                    if (rushHourEvilSide != null) {
+                        rushHourEvilSide.onNetworkCallback(0);
+                    }
                     // first & correct!
                     if (firstCorrect && tokensLeft > 1) {
                         tokensLeft -= 2;
@@ -240,9 +238,6 @@ public enum RoundManager {
                         // either not first or not enough tokens to satisfy, but still correct
                     } else if (tokensLeft > 0) {
                         tokensLeft -= 1;
-                        if (rushHourEvilSide != null) {
-                            rushHourEvilSide.onNetworkCallback(0);
-                        }
                         networkCallback.onNetworkCallback(1);
                         // still correct, not enough tokens
                     } else {
@@ -252,7 +247,12 @@ public enum RoundManager {
                     // not correct
                 } else {
                     if (rushHourEvilSide != null) {
-                        rushHourEvilSide.onNetworkCallback(1);
+                        if (tokensLeft > 0) {
+                            rushHourEvilSide.onNetworkCallback(1);
+                            tokensLeft -= 1;
+                        } else {
+                            rushHourEvilSide.onNetworkCallback(0);
+                        }
                     }
                     networkCallback.onNetworkCallback(0);
                 }
@@ -262,7 +262,7 @@ public enum RoundManager {
             }
 
             // game over!
-            if (tokensLeft == 0) {
+            if (tokensLeft <= 0) {
                 firstCorrect = false;
                 tryToEndGame();
             } else if (currentPlayersCount == 0) {
