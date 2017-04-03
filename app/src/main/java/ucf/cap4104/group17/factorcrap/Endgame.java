@@ -38,7 +38,7 @@ public class Endgame extends AppCompatActivity {
         replay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), Welcome.class));
+                startActivity(new Intent(getApplicationContext(), Choice.class));
                 finish();
             }
         });
@@ -50,6 +50,7 @@ public class Endgame extends AppCompatActivity {
         exit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), Welcome.class));
                 finish();
             }
         });
