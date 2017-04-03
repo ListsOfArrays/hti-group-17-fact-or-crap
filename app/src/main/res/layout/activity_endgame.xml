@@ -46,11 +46,11 @@
 
         <Button
             android:id="@+id/exitButton"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            style="?android:attr/buttonBarButtonStyle"
-            android:text="Exit" />
+            android:text="Main Menu" />
     </LinearLayout>
 
     <LinearLayout
